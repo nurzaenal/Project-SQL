@@ -1,4 +1,4 @@
-----Crash_clean dengan colom timestamp_local
+----Crash_clean with colom timestamp_local
 create table crash_clean AS(
 select*,
 case
@@ -82,7 +82,7 @@ when state_name in('Oklahoma','Colorado','North Carolina',
  end timestamp_local
  from crash)
 
---tampilkan
+--Display the time stamp
 select * from crash_clean
 --filter duplicate 
 select * from crash clean 
@@ -91,9 +91,9 @@ where consecutive_number in(280587,481975,280595,481976)
 --delete duplicate
 DELETE FROM crash  WHERE consecutive_number IN (280595, 481976)
 
--- Nomor 1. kondisi yang meningkatkan resiko kecelakaan
+-- Numbet 1. Condition cause increased the accident
 
--- Kombinasi Kondisi
+-- Combination condition accident
 SELECT atmospheric_conditions_1_name, light_condition_name, manner_of_collision_name, type_of_intersection_name, functional_system_name, COUNT(*) as total_accidents, Sum(number_of_fatalities) as Jumlah_fatal
 FROM crash_clean
 WHERE EXTRACT(YEAR FROM timestamp_local) = 2021 
@@ -105,7 +105,7 @@ AND functional_system_name NOT IN ('Not Reported', 'Unknown')
 GROUP BY atmospheric_conditions_1_name, light_condition_name, manner_of_collision_name, type_of_intersection_name, functional_system_name
 ORDER BY total_accidents DESC;
 
---Cara kecelakaan
+-- Manner condisiton accident
 select manner_of_collision_name, count (*) as total_accidents
 from crash_clean 
 where extract (year from timestamp_local) = 2021
@@ -117,7 +117,7 @@ AND functional_system_name NOT IN ('Not Reported', 'Unknown')
 group by manner_of_collision_name
 ORDER BY total_accidents DESC;
 
---kondisi cuaca
+--Weather
 select atmospheric_conditions_1_name, count (*) as total_accidents
 from crash_clean 
 where extract (year from timestamp_local) = 2021
@@ -129,7 +129,7 @@ AND functional_system_name NOT IN ('Not Reported', 'Unknown')
 group by atmospheric_conditions_1_name
 ORDER BY total_accidents DESC;
 
---tipe persimpangan
+--Type intersection data
 select type_of_intersection_name, count (*) as total_accidents
 from crash_clean 
 where extract (year from timestamp_local) = 2021
@@ -142,7 +142,7 @@ group by type_of_intersection_name
 ORDER BY total_accidents DESC;
 
 
---kondisi cahaya
+--Light Condition 
 select light_condition_name, count (*) as total_accidents
 from crash_clean 
 where extract (year from timestamp_local) = 2021
@@ -167,7 +167,7 @@ AND functional_system_name NOT IN ('Not Reported', 'Unknown')
 group by functional_system_name
 ORDER BY total_accidents DESC;
 
---2. 10 teratas negara bagian di mana kecelakaan paling banyak terjadi
+--2. 10 Highest state name commonly happened
 select state_name,
 count (*) as jumlah_kecelakaan
 from crash_clean
@@ -176,19 +176,15 @@ group by state_name
 order by jumlah_kecelakaan desc
 limit 10
 
---3. Jumlah rata-rata kejadian kecelakaan perhari berdasarkan jam terjadinya kecelakaan
---select to_char(timestamp_local, 'hh') 
---as jam, (count(1)/365) as kecelakaan
---from crash_clean
---group by jam
---order by jam
+--3. Average accident by hour 
+
 select EXTRACT(HOUR FROM timestamp_local) as hour,
 (count(*) /365.00 ) as kecelakaan
 from crash_clean
 where extract (year from timestamp_local) = 2021
 group by hour 
 order by hour desc
---4. Persentase kecelakaan yang disebabkan oleh pengemudi yang mabuk
+--4. Pecentage accident by drunk Alcohol
 select to_char(timestamp_local, 'YYYY') AS year,
 
 count (*) as jumlah_pmeabuk,
@@ -199,7 +195,7 @@ group by number_of_drunk_drivers
 order by 4 desc
 
 
---
+--// second query
 
 SELECT to_char(timestamp_local, 'YYYY') AS year,
 count(*) total_report_accident,
@@ -210,7 +206,7 @@ FROM crash_clean
 WHERE EXTRACT(YEAR FROM timestamp_local) = 2021
 GROUP BY year
 
---5. Persentasi kecelakaan di daerah pedesaan dan perkotaan
+--5.Percentage of Rural and Urban
 select land_use_name,
 2021 as Year,
 count (*) as jumlah_kecelakaan,
@@ -220,11 +216,10 @@ WHERE date_part('year', timestamp_local) = 2021
 group by land_use_name
 order by 4 desc
 
---6. Jumlah kecelakaan berdasarkan hari
+--6. Total Accident by Daily
 SELECT 
 count(*),
 to_char( timestamp_of_crash, 'Day') days
---cast (count(*) as float) / 365 as rata2_perhari 
 FROM crash_clean
 WHERE date_part('year', timestamp_local) ='2021'
 group by days
