@@ -1,4 +1,3 @@
---TUGAS 3.4.9 
 --menampilkan data transaksi terakhir yang berisi user_id,
 --first_name, email, kategori produk dan jumlah hari sejak terakhir kali belanja.
 --Asumsikan hari ini adalah tanggal 9 September 2022
@@ -14,12 +13,15 @@ from
 	*,
 	rank() over(partition by user_id order by order_items.created_at desc)urutan_transaksi
 from order_items
-where extract(day from '2022-09-09' - order_items.created_at)< 90 
+where extract(day from '2022-09-09' - order_items.created_at)< 90
 	)order_items_urutan
 left join users u on u.id = order_items_urutan.user_id
 left join products p on p.id = order_items_urutan.product_id
 where urutan_transaksi = 1 
 order by jumlah_hari_2022_09_09 desc ;
+
+
+--first_name, email, kategori produk dan jumlah hari sejak terakhir kali belanja.
 
 select * from
 (select user_id,u.first_name,u.email,category ,
