@@ -1,6 +1,103 @@
---menampilkan data transaksi terakhir yang berisi user_id,
---first_name, email, kategori produk dan jumlah hari sejak terakhir kali belanja.
---Asumsikan hari ini adalah tanggal 9 September 2022
+'''1. Extracting Data'''
+
+SELECT 
+    sales.id,
+    sales.date,
+    sales.amount,
+    customers.name AS customer_name,
+    products.name AS product_name
+FROM 
+    sales
+INNER JOIN 
+    customers ON sales.customer_id = customers.id
+INNER JOIN 
+    products ON sales.product_id = products.id;
+
+'''2. Transforming Data'''
+
+SELECT 
+    customers.name AS customer_name,
+    SUM(sales.amount) AS total_sales
+FROM 
+    sales
+INNER JOIN 
+    customers ON sales.customer_id = customers.id
+GROUP BY 
+    customers.name;
+
+'''3. Data Cleaning Techniques'''
+--a. Handling Missing Values
+SELECT 
+    *
+FROM 
+    sales
+WHERE 
+    amount IS NULL;
+
+--b. Removing Duplicates
+
+UPDATE 
+    sales
+SET 
+    amount = 0
+WHERE 
+    amount IS NULL;
+
+--Remove duplicate rows while keeping the latest entry:
+DELETE FROM 
+    sales
+WHERE 
+    id NOT IN (
+        SELECT 
+            MAX(id)
+        FROM 
+            sales
+        GROUP BY 
+            customer_id, product_id
+    );
+
+
+--c.  Correcting Inconsistent Data
+
+UPDATE 
+    products
+SET 
+    name = LOWER(name);
+
+'''4. Ensuring Data Quality'''
+--a. Validating Data Integrity
+
+ALTER TABLE 
+    sales
+ADD CONSTRAINT 
+    positive_amount CHECK (amount >= 0);
+
+--b. Using Transactions for Data Consistency
+BEGIN TRANSACTION;
+
+UPDATE 
+    sales
+SET 
+    amount = amount * 1.1
+WHERE 
+    date >= '2023-01-01';
+
+UPDATE 
+    customers
+SET 
+    status = 'Active'
+WHERE 
+    id IN (SELECT customer_id FROM sales WHERE date >= '2023-01-01');
+
+COMMIT;
+
+
+-- roll back the transaction to maintain data consistency:
+
+ROLLBACK;
+
+
+
 '''
 Displaying the latest transaction data that includes user_id, first_name, email, 
 product category, and the number of days since the last purchase. 
